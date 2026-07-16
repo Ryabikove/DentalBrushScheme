@@ -18,39 +18,39 @@ public class Space {
 		return Objects.isNull(this.outerBrush);
 	}
 
-	public boolean isNotAvailable() {
-		return !this.leftTooth.isAvailable() && this.rightTooth.isAvailable();
+	public boolean isAvailable() {
+		return this.leftTooth.isAvailable() || this.rightTooth.isAvailable();
 	}
 
 	public void fillInnerBrush(Brush brush) {
-		if (this.isNotAvailable()) {
-			throw new IllegalStateException("Space is not available");
-		} else {
+		if (this.isAvailable()) {
 			this.innerBrush = brush;
+		} else {
+			throw new IllegalStateException("Space is not available");
 		}
 	}
 
 	public void fillOuterBrush(Brush brush) {
-		if (this.isNotAvailable()) {
-			throw new IllegalStateException("Space is not available");
-		} else {
+		if (this.isAvailable()) {
 			this.outerBrush = brush;
+		} else {
+			throw new IllegalStateException("Space is not available");
 		}
 	}
 
 	public void emptyInnerBrush() {
-		if (this.isNotAvailable()) {
-			throw new IllegalStateException("Space is not available");
-		} else {
+		if (this.isAvailable()) {
 			this.innerBrush = null;
+		} else {
+			throw new IllegalStateException("Space is not available");
 		}
 	}
 
 	public void emptyOuterBrush() {
-		if (this.isNotAvailable()) {
-			throw new IllegalStateException("Space is not available");
-		} else {
+		if (this.isAvailable()) {
 			this.outerBrush = null;
+		} else {
+			throw new IllegalStateException("Space is not available");
 		}
 	}
 }
