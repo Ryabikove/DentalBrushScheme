@@ -4,22 +4,31 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.Objects;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+import ru.yanes.data.Brush;
 import ru.yanes.data.Mouth;
 import ru.yanes.data.Space;
 import ru.yanes.data.Tooth;
 
 public class DentalScheme extends JFrame {
+	private Brush selectedBrush;
+	private final int[] windowMinSize = new int[]{1200, 1200};
+	private final int[] brushPanelMinSize = new int[]{200, 0};
+
 	public DentalScheme() {
 		Mouth mouth = new Mouth(32);
 
 		this.setTitle("\ud83e\uddb7 Дентальная схема");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.add(new DentalPanel(mouth));
-		this.pack();
+		this.add(new BrushPanel(), BorderLayout.EAST);
+		this.add(new DentalPanel(mouth), BorderLayout.CENTER);
+		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
 		this.setVisible(true);
 	}
 
@@ -33,6 +42,118 @@ public class DentalScheme extends JFrame {
 		SwingUtilities.invokeLater(DentalScheme::new);
 	}
 
+	class BrushPanel extends JPanel {
+		private final int brushRadius = 70;
+		private Brush selectedBrush;
+
+		BrushPanel() {
+			this.setBackground(Color.LIGHT_GRAY);
+			this.setPreferredSize(new Dimension(brushPanelMinSize[0], brushPanelMinSize[1]));
+
+			this.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent e) {
+						handlePanelClick(e.getX(), e.getY());
+					}
+			});
+		}
+
+		private void handlePanelClick(int mouseX, int mouseY) {
+			int centerX = getWidth() / 2;
+			int centerY = getHeight() / 2;
+
+			// Check Brush click target
+			if (checkBrushClick(mouseX, mouseY, centerX, centerY)) {
+				repaint();
+				return;
+			}
+		}
+
+		private boolean checkBrushClick(int mouseX, int mouseY, int centerX, int centerY) {
+			int brushCount = Brush.values().length;
+
+			for (int i = 1; i <= brushCount; i++) {
+
+				int brushPos = this.getHeight() / (brushCount + 1) * i;
+
+				//If x,y of mouse in brush
+				if (getDistance(centerX, brushPos, mouseX, mouseY) <= (double) brushRadius / 2) {
+					Brush clickedBrush = Brush.values()[i - 1];
+
+					//Then if brush has been selected - unpin, if it hasn't - pin
+					if (Objects.equals(clickedBrush, selectedBrush)) {
+						System.out.println("Unpinned brush - " + clickedBrush.getDiameter());
+						selectedBrush = null;
+					} else {
+						System.out.println("Pinned brush - " + clickedBrush.getDiameter());
+						selectedBrush = clickedBrush;
+					}
+
+					return true;
+				}
+
+			}
+
+			return false;
+		}
+
+		private double getDistance(int x1, int y1, int x2, int y2) {
+			return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			int brushCount = Brush.values().length;
+			int centerX = this.getWidth() / 2;
+
+			for (int i = 1; i <= brushCount; i++) {
+				Brush brush = Brush.values()[i - 1];
+				int brushPos = this.getHeight() / (brushCount + 1) * i;
+
+				// Save the original transform state
+				AffineTransform originalTransform = g2d.getTransform();
+
+				// Translate the origin to our calculated x, y coordinates
+				g2d.translate(centerX, brushPos);
+
+				if (Objects.equals(brush,selectedBrush)){
+					g2d.setColor(Color.WHITE);
+					g2d.setStroke(new BasicStroke(10F));
+					g2d.drawOval(-brushRadius / 2, -brushRadius / 2, brushRadius + 5, brushRadius + 5);
+				}
+
+				// Draw the brush shape (centered on 0,0 since we translated)
+				g2d.setColor(brush.getColor());
+				g2d.fillOval(-brushRadius / 2, -brushRadius / 2, brushRadius, brushRadius);
+
+
+				// Draw the outline
+				g2d.setColor(Color.BLACK);
+				g2d.setStroke(new BasicStroke(2.5F));
+				g2d.drawOval(-brushRadius / 2, -brushRadius / 2, brushRadius, brushRadius);
+
+				// Draw brush diameter
+				String posText = String.valueOf(brush.getDiameter());
+				g2d.setFont(new Font("Arial", Font.BOLD, 14));
+				FontMetrics fontMetrics = g2d.getFontMetrics();
+				int textX = -fontMetrics.stringWidth(posText) / 2;
+				int textY = fontMetrics.getHeight() / 2 - 2;
+
+				g2d.drawString(posText, textX, textY);
+
+				// Restore the original transform so the next tooth draws correctly
+				g2d.setTransform(originalTransform);
+			}
+		}
+
+
+	}
+
 	class DentalPanel extends JPanel {
 		private final Mouth mouth;
 
@@ -44,8 +165,10 @@ public class DentalScheme extends JFrame {
 		// Define the ellipse boundaries for the arch
 		private final int radiusX = 350;
 		private final int radiusY = 430;
-		private final int toothRadius = 25;  // Collision detection radius for teeth
-		private final int spaceRadius = 20;  // Collision detection radius for spaces
+		// Collision detection radius for teeth
+		private final int toothRadius = 25;
+		// Collision detection radius for spaces
+		private final int spaceRadius = 20;
 
 		public DentalPanel(Mouth mouth) {
 			this.mouth = mouth;
@@ -88,10 +211,10 @@ public class DentalScheme extends JFrame {
 				int y = (int) (centerY - radiusY * Math.sin(currentAngle));
 
 				if (getDistance(mouseX, mouseY, x, y) <= toothRadius) {
-					Tooth clickedTooth = mouth.getTooth(jawIndices[i]); //[cite: 2]
+					Tooth clickedTooth = mouth.getTooth(jawIndices[i]);
 					// Toggle availability state
-					clickedTooth.setAvailable(!clickedTooth.isAvailable()); //[cite: 4]
-					System.out.println("Toggled Tooth " + clickedTooth.getPosition() + " to available = " + clickedTooth.isAvailable()); //[cite: 4]
+					clickedTooth.setAvailable(!clickedTooth.isAvailable());
+					System.out.println("Toggled Tooth " + clickedTooth.getPosition() + " to available = " + clickedTooth.isAvailable());
 					return true;
 				}
 			}
@@ -108,7 +231,7 @@ public class DentalScheme extends JFrame {
 			super.paintComponent(g);
 
 			// Enable antialiasing for smooth circles and text
-			Graphics2D g2d = (Graphics2D)g;
+			Graphics2D g2d = (Graphics2D) g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 			int centerX = this.getWidth() / 2;
