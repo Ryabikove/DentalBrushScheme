@@ -29,6 +29,7 @@ public class DentalScheme extends JFrame {
 		this.add(new BrushPanel(), BorderLayout.EAST);
 		this.add(new DentalPanel(mouth), BorderLayout.CENTER);
 		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
+		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
 
