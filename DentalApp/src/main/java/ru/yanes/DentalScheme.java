@@ -5,7 +5,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.Objects;
-import java.util.function.Function;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -164,21 +163,9 @@ public class DentalScheme extends JFrame {
 		private final int[] upperJawIndices = new int[]{7, 6, 5, 4, 3, 2, 1, 0, 8, 9, 10, 11, 12, 13, 14, 15};
 		// Screen Left -> Right (Lower Jaw): 48 to 41, then 31 to 38
 		private final int[] lowerJawIndices = new int[]{31, 30, 29, 28, 27, 26, 25, 24, 16, 17, 18, 19, 20, 21, 22, 23};
-
 		// Define the ellipse boundaries for the arch
 		private final int radiusX = 350;
 		private final int radiusY = 430;
-
-		// Define tooth width and height
-		private final int toothWidth = 45;
-		private final int toothHeight = 55;
-		private final Color basicToothColor = Color.WHITE;
-
-		// Define space width and height
-		private final int spaceWidth = 15;
-		private final int spaceHeight = 45;
-		private final Color basicSpaceColor = Color.LIGHT_GRAY;
-
 		// Collision detection radius for teeth
 		private final int toothRadius = 25;
 		// Collision detection radius for spaces
@@ -304,12 +291,14 @@ public class DentalScheme extends JFrame {
 					int midX = (int)(centerX + radiusX * Math.cos(midAngle));
 					int midY = (int)(centerY + radiusY * Math.sin(midAngle));
 
-					this.drawSpaces(g2d, space, midX, midY, midAngle);
+					this.drawSpace(g2d, space, midX, midY, midAngle);
 				}
 			}
 		}
 
 		private void drawTooth(Graphics2D g2d, Tooth tooth, int x, int y, double angle) {
+			int width = 45;
+			int height = 55;
 
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
@@ -322,13 +311,13 @@ public class DentalScheme extends JFrame {
 			g2d.rotate(angle + (Math.PI / 2));
 
 			// Draw the tooth shape (centered on 0,0 since we translated)
-			g2d.setColor(tooth.isAvailable()? basicToothColor : basicToothColor.darker());
-			g2d.fillRoundRect(-toothWidth / 2, -toothHeight / 2, toothWidth, toothHeight, 20, 20);
+			g2d.setColor(tooth.isAvailable()? Color.WHITE : Color.LIGHT_GRAY);
+			g2d.fillRoundRect(-width / 2, -height / 2, width, height, 20, 20);
 
 			// Draw the outline
 			g2d.setColor(Color.BLACK);
 			g2d.setStroke(new BasicStroke(2.5F));
-			g2d.drawRoundRect(-toothWidth / 2, -toothHeight / 2, toothWidth, toothHeight, 20, 20);
+			g2d.drawRoundRect(-width / 2, -height / 2, width, height, 20, 20);
 
 			// Draw the FDI position text[cite: 4]
 			String posText = String.valueOf(tooth.getPosition());
@@ -343,7 +332,7 @@ public class DentalScheme extends JFrame {
 			g2d.setTransform(originalTransform);
 		}
 
-		private void drawSpaces(Graphics2D g2d, Space space, int x, int y, double angle) {
+		private void drawSpace(Graphics2D g2d, Space space, int x, int y, double angle) {
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
 
@@ -354,38 +343,14 @@ public class DentalScheme extends JFrame {
 			// Adding Math.PI / 2 ensures the "top" of the tooth shape points away from the center
 			g2d.rotate(angle + (Math.PI / 2));
 
-			Function<Brush, Color> getColor = brush -> {
-				if (Objects.nonNull(brush)) {
-					return brush.getColor();
-				} else  {
-					return basicSpaceColor;
-				}
-			};
-
-			// Draw outer space
-			drawSpace(g2d, new int[]{0, spaceWidth, -spaceWidth}, new int[]{-toothHeight / 3, -spaceHeight, -spaceHeight},
-					space.isAvailable()? getColor.apply(space.getOuterBrush()) : basicSpaceColor.darker());
-
-			// Draw inner space
-			drawSpace(g2d, new int[]{0, spaceWidth, -spaceWidth}, new int[]{toothHeight / 3, spaceHeight, spaceHeight},
-					space.isAvailable()? getColor.apply(space.getInnerBrush()) : basicSpaceColor.darker());
+			// Draw the space shape
+			g2d.setColor(space.isAvailable()? Color.DARK_GRAY : Color.BLACK);
+			g2d.drawLine(0, -25, 0, 25);
 
 			// Restore the original transform so the next tooth draws correctly
 			g2d.setTransform(originalTransform);
 		}
 
-		//TODO refactor to inner method
-		private void drawSpace(Graphics2D g2d, int[] xPoints, int[] yPoints, Color color) {
-
-			//Draw the shape
-			g2d.setColor(color);
-			g2d.fillPolygon(xPoints, yPoints, 3);
-
-			// Draw the outline
-			g2d.setColor(Color.BLACK);
-			g2d.setStroke(new BasicStroke(2.5F));
-			g2d.drawPolygon(xPoints, yPoints, 3);
-		}
 
 	}
 }
