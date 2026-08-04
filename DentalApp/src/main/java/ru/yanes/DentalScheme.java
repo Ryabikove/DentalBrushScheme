@@ -198,35 +198,30 @@ public class DentalScheme extends JFrame {
 			int centerY = getHeight() / 2;
 
 			// Check Upper Jaw click targets
-			if (checkJawClick(upperJawIndices, mouseX, mouseY, centerX, centerY + 40, Math.PI * 1.05, Math.PI * 1.95)) {
-				repaint();
-				return;
-			}
+			checkJawClick(mouseX, mouseY, true, centerX, centerY - 40, Math.PI * 0.95, Math.PI * 0.05);
 
 			// Check Lower Jaw click targets
-			if (checkJawClick(lowerJawIndices, mouseX, mouseY, centerX, centerY - 40, Math.PI * 0.95, Math.PI * 0.05)) {
-				repaint();
-				return;
-			}
+			checkJawClick(mouseX, mouseY, false, centerX, centerY + 40, Math.PI * 1.05, Math.PI * 1.95);
 		}
 
-		private boolean checkJawClick(int[] jawIndices, int mouseX, int mouseY,
+		private void checkJawClick(int mouseX, int mouseY, boolean upper,
 		                              int centerX, int centerY, double startAngle, double endAngle) {
-			int toothCount = jawIndices.length;
-			double angleStep = (endAngle - startAngle) / (toothCount - 1);
+
+			int start = upper ? 0 : 16;
+			double angleStep = (endAngle - startAngle) / 15;
 
 			// 1. Check if the user clicked any Tooth
-			for (int i = 0; i < toothCount; i++) {
+			for (int i = 0; i < 16; i++) {
 				double currentAngle = startAngle + (i * angleStep);
 				int x = (int) (centerX + radiusX * Math.cos(currentAngle));
 				int y = (int) (centerY - radiusY * Math.sin(currentAngle));
 
 				if (getDistance(mouseX, mouseY, x, y) <= toothRadius) {
-					Tooth clickedTooth = mouth.getTooth(jawIndices[i]);
+					Tooth clickedTooth = mouth.getTooth(start + i);
 					// Toggle availability state
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
 					System.out.println("Toggled Tooth " + clickedTooth.getPosition() + " to available = " + clickedTooth.isAvailable());
-					return true;
+					repaint();
 				}
 			}
 		}
@@ -247,10 +242,11 @@ public class DentalScheme extends JFrame {
 			int centerY = this.getHeight() / 2;
 
 			// Draw Upper Jaw (Angles from roughly 170 degrees to 10 degrees) and it is wider than lower jaw (radius X and Y smaller)
-			this.drawJaw(g2d, this.upperJawIndices, centerX, centerY + 40, Math.PI * 0.95, Math.PI * 0.05);
+			this.drawJaw(g2d, true, centerX, centerY - 40, Math.PI * 1.05, Math.PI * 1.95);
+
 
 			// Draw Lower Jaw (Angles from roughly 190 degrees to 350 degrees)
-			this.drawJaw(g2d, this.lowerJawIndices, centerX, centerY - 40, Math.PI * 1.05, Math.PI * 1.95);
+			this.drawJaw(g2d, false, centerX, centerY + 40, Math.PI * 0.95, Math.PI * 0.05);
 
 			g2d.setFont(new Font("Arial", Font.BOLD, 28));
 			g2d.setColor(Color.DARK_GRAY);
@@ -274,16 +270,16 @@ public class DentalScheme extends JFrame {
 			g2d.drawString(bottomText, bottomTextX, bottomTextY);
 		}
 
-		private void drawJaw(Graphics2D g2d, int[] jawIndices, int centerX, int centerY, double startAngle, double endAngle) {
+		private void drawJaw(Graphics2D g2d, boolean upper, int centerX, int centerY, double startAngle, double endAngle) {
 
-			int toothCount = jawIndices.length;
-			double angleStep = (endAngle - startAngle) / (toothCount - 1);
+			double angleStep = (endAngle - startAngle) / 15;
+			int start = upper ? 0 : 16;
 
-			for(int i = 0; i < toothCount; ++i) {
+			for(int i = 0; i < 16; ++i) {
 				// Retrieve the specific tooth based on our visual map[cite: 2]
-				Tooth tooth = this.mouth.getTooth(jawIndices[i]);
+				Tooth tooth = this.mouth.getTooth(start + i);
 
-				double currentAngle = startAngle + angleStep * (double)i;
+				double currentAngle = startAngle + angleStep * (double) i;
 
 				// Calculate x and y using polar equations for an ellipse
 				int x = (int)(centerX + radiusX * Math.cos(currentAngle));
@@ -292,10 +288,15 @@ public class DentalScheme extends JFrame {
 				this.drawTooth(g2d, tooth, x, y, currentAngle);
 
 
-				if (i != 0) {
-					Space space = this.mouth.getSpace(i - 1);
+				if (i < 15) {
+					Space space;
+					if (upper) {
+						space = this.mouth.getSpace(start + i);
+					} else {
+						space = this.mouth.getSpace(start + i - 1);
+					}
 
-					double midAngle = currentAngle - angleStep / 2;
+					double midAngle = currentAngle + angleStep / 2;
 					int midX = (int)(centerX + radiusX * Math.cos(midAngle));
 					int midY = (int)(centerY + radiusY * Math.sin(midAngle));
 
