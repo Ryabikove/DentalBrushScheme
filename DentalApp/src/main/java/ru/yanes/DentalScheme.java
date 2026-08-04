@@ -23,13 +23,16 @@ public class DentalScheme extends JFrame {
 	private final int[] brushPanelMinSize = new int[]{200, 0};
 
 	public DentalScheme() {
-		Mouth mouth = new Mouth(32);
+		Mouth mouth = new Mouth();
 
 		this.setTitle("\ud83e\uddb7 Дентальная схема");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
+
+
 		this.add(new BrushPanel(), BorderLayout.EAST);
 		this.add(new DentalPanel(mouth), BorderLayout.CENTER);
-		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
+
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
@@ -159,12 +162,6 @@ public class DentalScheme extends JFrame {
 	class DentalPanel extends JPanel {
 		private final Mouth mouth;
 
-		// Mapping the internal array indices of Mouth.java to the visual screen order.
-		// Screen Left -> Right (Upper Jaw): 18 to 11, then 21 to 28
-		private final int[] upperJawIndices = new int[]{7, 6, 5, 4, 3, 2, 1, 0, 8, 9, 10, 11, 12, 13, 14, 15};
-		// Screen Left -> Right (Lower Jaw): 48 to 41, then 31 to 38
-		private final int[] lowerJawIndices = new int[]{31, 30, 29, 28, 27, 26, 25, 24, 16, 17, 18, 19, 20, 21, 22, 23};
-
 		// Define the ellipse boundaries for the arch
 		private final int radiusX = 350;
 		private final int radiusY = 430;
@@ -232,8 +229,6 @@ public class DentalScheme extends JFrame {
 					return true;
 				}
 			}
-
-			return false;
 		}
 
 		private double getDistance(int x1, int y1, int x2, int y2) {
@@ -311,6 +306,8 @@ public class DentalScheme extends JFrame {
 
 		private void drawTooth(Graphics2D g2d, Tooth tooth, int x, int y, double angle) {
 
+//			System.out.println("Drawing tooth - " + tooth.getPosition() + ";");
+
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
 
@@ -330,7 +327,7 @@ public class DentalScheme extends JFrame {
 			g2d.setStroke(new BasicStroke(2.5F));
 			g2d.drawRoundRect(-toothWidth / 2, -toothHeight / 2, toothWidth, toothHeight, 20, 20);
 
-			// Draw the FDI position text[cite: 4]
+			// Draw the FDI position text
 			String posText = String.valueOf(tooth.getPosition());
 			g2d.setFont(new Font("Arial", Font.BOLD, 16));
 			FontMetrics fontMetrics = g2d.getFontMetrics();
@@ -362,6 +359,8 @@ public class DentalScheme extends JFrame {
 				}
 			};
 
+//			System.out.println("Drawing spaces '" + space.getPosition() + "' between left tooth - " + space.getLeftTooth().getPosition() + " and right tooth - " + space.getRightTooth().getPosition() + ";");
+
 			// Draw outer space
 			drawSpace(g2d, new int[]{0, spaceWidth, -spaceWidth}, new int[]{-toothHeight / 3, -spaceHeight, -spaceHeight},
 					space.isAvailable()? getColor.apply(space.getOuterBrush()) : basicSpaceColor.darker());
@@ -369,6 +368,14 @@ public class DentalScheme extends JFrame {
 			// Draw inner space
 			drawSpace(g2d, new int[]{0, spaceWidth, -spaceWidth}, new int[]{toothHeight / 3, spaceHeight, spaceHeight},
 					space.isAvailable()? getColor.apply(space.getInnerBrush()) : basicSpaceColor.darker());
+
+			// Draw the FDI position text
+//			String posText = String.valueOf(space.getPosition());
+//			g2d.setFont(new Font("Arial", Font.BOLD, 16));
+//			FontMetrics fontMetrics = g2d.getFontMetrics();
+//			int textX = -fontMetrics.stringWidth(posText) / 2;
+//			int textY = fontMetrics.getAscent() / 2 - 2;
+//			g2d.drawString(posText, textX, textY);
 
 			// Restore the original transform so the next tooth draws correctly
 			g2d.setTransform(originalTransform);
