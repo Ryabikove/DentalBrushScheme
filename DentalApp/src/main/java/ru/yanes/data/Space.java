@@ -7,8 +7,10 @@ import lombok.Data;
 public class Space {
 	private final Tooth leftTooth;
 	private final Tooth rightTooth;
+	private final int position;
 	private Brush innerBrush = null;
 	private Brush outerBrush = null;
+
 
 	public boolean isInnerEmpty() {
 		return Objects.isNull(this.innerBrush);
