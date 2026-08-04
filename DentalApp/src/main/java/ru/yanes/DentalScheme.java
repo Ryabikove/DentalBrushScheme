@@ -23,13 +23,16 @@ public class DentalScheme extends JFrame {
 	private final int[] brushPanelMinSize = new int[]{200, 0};
 
 	public DentalScheme() {
-		Mouth mouth = new Mouth(32);
+		Mouth mouth = new Mouth();
 
 		this.setTitle("\ud83e\uddb7 Дентальная схема");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
+
+
 		this.add(new BrushPanel(), BorderLayout.EAST);
 		this.add(new DentalPanel(mouth), BorderLayout.CENTER);
-		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
+
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
@@ -159,12 +162,6 @@ public class DentalScheme extends JFrame {
 	class DentalPanel extends JPanel {
 		private final Mouth mouth;
 
-		// Mapping the internal array indices of Mouth.java to the visual screen order.
-		// Screen Left -> Right (Upper Jaw): 18 to 11, then 21 to 28
-		private final int[] upperJawIndices = new int[]{7, 6, 5, 4, 3, 2, 1, 0, 8, 9, 10, 11, 12, 13, 14, 15};
-		// Screen Left -> Right (Lower Jaw): 48 to 41, then 31 to 38
-		private final int[] lowerJawIndices = new int[]{31, 30, 29, 28, 27, 26, 25, 24, 16, 17, 18, 19, 20, 21, 22, 23};
-
 		// Define the ellipse boundaries for the arch
 		private final int radiusX = 350;
 		private final int radiusY = 430;
@@ -201,39 +198,32 @@ public class DentalScheme extends JFrame {
 			int centerY = getHeight() / 2;
 
 			// Check Upper Jaw click targets
-			if (checkJawClick(upperJawIndices, mouseX, mouseY, centerX, centerY + 40, Math.PI * 1.05, Math.PI * 1.95)) {
-				repaint();
-				return;
-			}
+			checkJawClick(mouseX, mouseY, true, centerX, centerY - 40, Math.PI * 0.95, Math.PI * 0.05);
 
 			// Check Lower Jaw click targets
-			if (checkJawClick(lowerJawIndices, mouseX, mouseY, centerX, centerY - 40, Math.PI * 0.95, Math.PI * 0.05)) {
-				repaint();
-				return;
-			}
+			checkJawClick(mouseX, mouseY, false, centerX, centerY + 40, Math.PI * 1.05, Math.PI * 1.95);
 		}
 
-		private boolean checkJawClick(int[] jawIndices, int mouseX, int mouseY,
+		private void checkJawClick(int mouseX, int mouseY, boolean upper,
 		                              int centerX, int centerY, double startAngle, double endAngle) {
-			int toothCount = jawIndices.length;
-			double angleStep = (endAngle - startAngle) / (toothCount - 1);
+
+			int start = upper ? 0 : 16;
+			double angleStep = (endAngle - startAngle) / 15;
 
 			// 1. Check if the user clicked any Tooth
-			for (int i = 0; i < toothCount; i++) {
+			for (int i = 0; i < 16; i++) {
 				double currentAngle = startAngle + (i * angleStep);
 				int x = (int) (centerX + radiusX * Math.cos(currentAngle));
 				int y = (int) (centerY - radiusY * Math.sin(currentAngle));
 
 				if (getDistance(mouseX, mouseY, x, y) <= toothRadius) {
-					Tooth clickedTooth = mouth.getTooth(jawIndices[i]);
+					Tooth clickedTooth = mouth.getTooth(start + i);
 					// Toggle availability state
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
 					System.out.println("Toggled Tooth " + clickedTooth.getPosition() + " to available = " + clickedTooth.isAvailable());
-					return true;
+					repaint();
 				}
 			}
-
-			return false;
 		}
 
 		private double getDistance(int x1, int y1, int x2, int y2) {
@@ -252,10 +242,11 @@ public class DentalScheme extends JFrame {
 			int centerY = this.getHeight() / 2;
 
 			// Draw Upper Jaw (Angles from roughly 170 degrees to 10 degrees) and it is wider than lower jaw (radius X and Y smaller)
-			this.drawJaw(g2d, this.upperJawIndices, centerX, centerY + 40, Math.PI * 0.95, Math.PI * 0.05);
+			this.drawJaw(g2d, true, centerX, centerY - 40, Math.PI * 1.05, Math.PI * 1.95);
+
 
 			// Draw Lower Jaw (Angles from roughly 190 degrees to 350 degrees)
-			this.drawJaw(g2d, this.lowerJawIndices, centerX, centerY - 40, Math.PI * 1.05, Math.PI * 1.95);
+			this.drawJaw(g2d, false, centerX, centerY + 40, Math.PI * 0.95, Math.PI * 0.05);
 
 			g2d.setFont(new Font("Arial", Font.BOLD, 28));
 			g2d.setColor(Color.DARK_GRAY);
@@ -279,16 +270,16 @@ public class DentalScheme extends JFrame {
 			g2d.drawString(bottomText, bottomTextX, bottomTextY);
 		}
 
-		private void drawJaw(Graphics2D g2d, int[] jawIndices, int centerX, int centerY, double startAngle, double endAngle) {
+		private void drawJaw(Graphics2D g2d, boolean upper, int centerX, int centerY, double startAngle, double endAngle) {
 
-			int toothCount = jawIndices.length;
-			double angleStep = (endAngle - startAngle) / (toothCount - 1);
+			double angleStep = (endAngle - startAngle) / 15;
+			int start = upper ? 0 : 16;
 
-			for(int i = 0; i < toothCount; ++i) {
+			for(int i = 0; i < 16; ++i) {
 				// Retrieve the specific tooth based on our visual map[cite: 2]
-				Tooth tooth = this.mouth.getTooth(jawIndices[i]);
+				Tooth tooth = this.mouth.getTooth(start + i);
 
-				double currentAngle = startAngle + angleStep * (double)i;
+				double currentAngle = startAngle + angleStep * (double) i;
 
 				// Calculate x and y using polar equations for an ellipse
 				int x = (int)(centerX + radiusX * Math.cos(currentAngle));
@@ -297,10 +288,15 @@ public class DentalScheme extends JFrame {
 				this.drawTooth(g2d, tooth, x, y, currentAngle);
 
 
-				if (i != 0) {
-					Space space = this.mouth.getSpace(i - 1);
+				if (i < 15) {
+					Space space;
+					if (upper) {
+						space = this.mouth.getSpace(start + i);
+					} else {
+						space = this.mouth.getSpace(start + i - 1);
+					}
 
-					double midAngle = currentAngle - angleStep / 2;
+					double midAngle = currentAngle + angleStep / 2;
 					int midX = (int)(centerX + radiusX * Math.cos(midAngle));
 					int midY = (int)(centerY + radiusY * Math.sin(midAngle));
 
@@ -310,6 +306,8 @@ public class DentalScheme extends JFrame {
 		}
 
 		private void drawTooth(Graphics2D g2d, Tooth tooth, int x, int y, double angle) {
+
+//			System.out.println("Drawing tooth - " + tooth.getPosition() + ";");
 
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
@@ -330,7 +328,7 @@ public class DentalScheme extends JFrame {
 			g2d.setStroke(new BasicStroke(2.5F));
 			g2d.drawRoundRect(-toothWidth / 2, -toothHeight / 2, toothWidth, toothHeight, 20, 20);
 
-			// Draw the FDI position text[cite: 4]
+			// Draw the FDI position text
 			String posText = String.valueOf(tooth.getPosition());
 			g2d.setFont(new Font("Arial", Font.BOLD, 16));
 			FontMetrics fontMetrics = g2d.getFontMetrics();
@@ -362,6 +360,8 @@ public class DentalScheme extends JFrame {
 				}
 			};
 
+//			System.out.println("Drawing spaces '" + space.getPosition() + "' between left tooth - " + space.getLeftTooth().getPosition() + " and right tooth - " + space.getRightTooth().getPosition() + ";");
+
 			// Draw outer space
 			drawSpace(g2d, new int[]{0, spaceWidth, -spaceWidth}, new int[]{-toothHeight / 3, -spaceHeight, -spaceHeight},
 					space.isAvailable()? getColor.apply(space.getOuterBrush()) : basicSpaceColor.darker());
@@ -369,6 +369,14 @@ public class DentalScheme extends JFrame {
 			// Draw inner space
 			drawSpace(g2d, new int[]{0, spaceWidth, -spaceWidth}, new int[]{toothHeight / 3, spaceHeight, spaceHeight},
 					space.isAvailable()? getColor.apply(space.getInnerBrush()) : basicSpaceColor.darker());
+
+			// Draw the FDI position text
+//			String posText = String.valueOf(space.getPosition());
+//			g2d.setFont(new Font("Arial", Font.BOLD, 16));
+//			FontMetrics fontMetrics = g2d.getFontMetrics();
+//			int textX = -fontMetrics.stringWidth(posText) / 2;
+//			int textY = fontMetrics.getAscent() / 2 - 2;
+//			g2d.drawString(posText, textX, textY);
 
 			// Restore the original transform so the next tooth draws correctly
 			g2d.setTransform(originalTransform);
