@@ -24,17 +24,25 @@ public class Space {
 		return this.leftTooth.isAvailable() || this.rightTooth.isAvailable();
 	}
 
-	public void fillInnerBrush(Brush brush) {
-		if (this.isAvailable()) {
-			this.innerBrush = brush;
+	public void setInnerBrush(Brush brush) {
+		if (this.isAvailable() && this.isOuterEmpty()) {
+			if (Objects.equals(this.innerBrush, brush)) {
+				this.innerBrush = null;
+			} else {
+				this.innerBrush = brush;
+			}
 		} else {
 			throw new IllegalStateException("Space is not available");
 		}
 	}
 
-	public void fillOuterBrush(Brush brush) {
-		if (this.isAvailable()) {
-			this.outerBrush = brush;
+	public void setOuterBrush(Brush brush) {
+		if (this.isAvailable() && this.isInnerEmpty()) {
+			if (Objects.equals(this.outerBrush, brush)) {
+				this.outerBrush = null;
+			} else {
+				this.outerBrush = brush;
+			}
 		} else {
 			throw new IllegalStateException("Space is not available");
 		}
