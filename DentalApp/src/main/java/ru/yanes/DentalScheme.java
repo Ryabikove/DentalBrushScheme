@@ -131,7 +131,7 @@ public class DentalScheme extends JFrame {
 				g2d.translate(centerX, brushPos);
 
 				if (Objects.equals(brush,selectedBrush)){
-					g2d.setColor(Color.WHITE);
+					g2d.setColor(Color.LIGHT_GRAY);
 					g2d.setStroke(new BasicStroke(10F));
 					g2d.drawOval(-brushRadius / 2, -brushRadius / 2, brushRadius + 5, brushRadius + 5);
 				}
@@ -312,26 +312,38 @@ public class DentalScheme extends JFrame {
 			// Draw Lower Jaw (Angles from roughly 190 degrees to 350 degrees)
 			this.drawJaw(g2d, false, centerX, centerY + 40, startAngleLowerJaw, endAngleLowerJaw);
 
-			g2d.setFont(new Font("Arial", Font.BOLD, 28));
+			g2d.setFont(new Font("Arial", Font.BOLD, 25));
 			g2d.setColor(Color.DARK_GRAY);
 
 			// Define padding and metrics for jaws markers
 			FontMetrics fm = g2d.getFontMetrics();
-			int padding = 50;
+			int padding = 100;
 
 			// Upper Jaw marker definition
 			String topText = "Верхняя челюсть";
 			int topTextWidth = fm.stringWidth(topText);
 			int topTextX = centerX - topTextWidth / 2;
-			int topTextY = centerY - 50 - radiusY - padding;
+			int topTextY = centerY - radiusY - padding;
 			g2d.drawString(topText, topTextX, topTextY);
 
 			// Lower Jaw marker definition
 			String bottomText = "Нижняя челюсть";
 			int bottomTextWidth = fm.stringWidth(bottomText);
 			int bottomTextX = centerX - bottomTextWidth / 2;
-			int bottomTextY = centerY + 50 + radiusY + padding + fm.getAscent();
+			int bottomTextY = centerY + radiusY + padding + fm.getAscent();
 			g2d.drawString(bottomText, bottomTextX, bottomTextY);
+
+			// Left side marker
+			String leftText = "Лево";
+			int leftTextWidth = fm.stringWidth(leftText);
+			int leftTextX = centerX - radiusX - leftTextWidth / 2;
+			g2d.drawString(leftText, leftTextX, centerY);
+
+			//Right side marker
+			String rightText = "Право";
+			int rightTextWidth = fm.stringWidth(rightText);
+			int rightTextX = centerX + radiusX - rightTextWidth / 2;
+			g2d.drawString(rightText, rightTextX, centerY);
 		}
 
 		private void drawJaw(Graphics2D g2d, boolean upper, int centerX, int centerY, double startAngle, double endAngle) {
