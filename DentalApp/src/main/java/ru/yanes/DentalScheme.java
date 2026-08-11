@@ -40,6 +40,7 @@ public class DentalScheme extends JFrame {
 
 		DentalPanel dentalPanel = new DentalPanel(mouth);
 		this.add(new BrushPanel(dentalPanel), BorderLayout.EAST);
+		this.add(new CommentPanel(), BorderLayout.WEST);
 		this.add(dentalPanel, BorderLayout.CENTER);
 
 		this.setLocationRelativeTo(null);
