@@ -1,6 +1,8 @@
 package ru.yanes;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -8,6 +10,11 @@ import java.awt.geom.AffineTransform;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.text.PlainDocument;
+
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -18,11 +25,12 @@ import ru.yanes.data.Mouth;
 import ru.yanes.data.Space;
 import ru.yanes.data.Tooth;
 
-public class DentalScheme extends JFrame {
+public class DentalScheme extends JFrame implements Printable {
 	private Brush selectedBrush;
-	private final int[] windowMinSize = new int[]{1600, 1200};
+	private final int[] windowMinSize = new int[]{1600, 1300};
 	private final int[] brushPanelPreferSize = new int[]{400, 0};
 	private final int[] commentPanelPreferSize = new int[]{400, 0};
+	private final int[] toolPanelPreferSize = new int[]{0, 30};
 	private String basicFont;
 	private int count = 0;
 	private final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
@@ -41,6 +49,7 @@ public class DentalScheme extends JFrame {
 		DentalPanel dentalPanel = new DentalPanel(mouth);
 		this.add(new BrushPanel(dentalPanel), BorderLayout.EAST);
 		this.add(new CommentPanel(), BorderLayout.WEST);
+		this.add(new ToolPanel(this), BorderLayout.NORTH);
 		this.add(dentalPanel, BorderLayout.CENTER);
 
 		this.setLocationRelativeTo(null);
@@ -55,6 +64,60 @@ public class DentalScheme extends JFrame {
 		}
 
 		SwingUtilities.invokeLater(DentalScheme::new);
+	}
+
+	@Override
+	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+		if (pageIndex > 0) {
+			return NO_SUCH_PAGE;
+		}
+		Graphics2D g2d = (Graphics2D) graphics;
+		g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+		this.printAll(g2d);
+
+		return PAGE_EXISTS;
+	}
+
+	class ToolPanel extends JPanel {
+		private final DentalScheme frameToPrint;
+
+		public ToolPanel(DentalScheme dentalScheme) {
+			this.frameToPrint = dentalScheme;
+			this.setPreferredSize(new Dimension(toolPanelPreferSize[0], toolPanelPreferSize[1]));
+			this.setBackground(defaultBackground);
+			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			this.setAlignmentY(TOP_ALIGNMENT);
+			this.add(getPrintButton());
+		}
+
+		private JButton getPrintButton() {
+			return getToolButton("Печать", e -> {
+				PrinterJob job = PrinterJob.getPrinterJob();
+
+				job.setPrintable(frameToPrint);
+
+				if (job.printDialog()) {
+					try {
+						job.print();
+					} catch (PrinterException e1) {
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(frameToPrint, "Ошибка печати: " + e1.getMessage());
+					}
+				}
+			});
+		}
+
+		private JButton getToolButton(String text, ActionListener actionListener) {
+			JButton button = new JButton(text);
+			button.setFont(new Font(basicFont, Font.PLAIN, 18));
+			button.setPreferredSize(new Dimension(100,30));
+			button.setFocusPainted(false);
+			button.setOpaque(true);
+
+			button.addActionListener(actionListener);
+			return button;
+		}
 	}
 
 	class CommentPanel extends JPanel {
