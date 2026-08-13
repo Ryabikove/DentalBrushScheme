@@ -4,7 +4,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
-class TextLimitDocumentFilter extends DocumentFilter {
+public class TextLimitDocumentFilter extends DocumentFilter {
 	private final int rowLimit;
 	private final int charLimit;
 

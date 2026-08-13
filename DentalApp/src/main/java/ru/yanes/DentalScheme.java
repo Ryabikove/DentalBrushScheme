@@ -1,7 +1,6 @@
 package ru.yanes;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -11,6 +10,7 @@ import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.text.PlainDocument;
 
+import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -25,7 +25,7 @@ import ru.yanes.data.Mouth;
 import ru.yanes.data.Space;
 import ru.yanes.data.Tooth;
 
-public class DentalScheme extends JFrame implements Printable {
+public class DentalScheme extends JFrame {
 	private Brush selectedBrush;
 	private final int[] windowMinSize = new int[]{1600, 1300};
 	private final int[] brushPanelPreferSize = new int[]{400, 0};
@@ -48,8 +48,8 @@ public class DentalScheme extends JFrame implements Printable {
 
 		DentalPanel dentalPanel = new DentalPanel(mouth);
 		this.add(new BrushPanel(dentalPanel), BorderLayout.EAST);
-		this.add(new CommentPanel(), BorderLayout.WEST);
 		this.add(new ToolPanel(this), BorderLayout.NORTH);
+		this.add(new ToolPanel(dentalPanel), BorderLayout.NORTH);
 		this.add(dentalPanel, BorderLayout.CENTER);
 
 		this.setLocationRelativeTo(null);
@@ -66,24 +66,11 @@ public class DentalScheme extends JFrame implements Printable {
 		SwingUtilities.invokeLater(DentalScheme::new);
 	}
 
-	@Override
-	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-		if (pageIndex > 0) {
-			return NO_SUCH_PAGE;
-		}
-		Graphics2D g2d = (Graphics2D) graphics;
-		g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-
-		this.printAll(g2d);
-
-		return PAGE_EXISTS;
-	}
-
 	class ToolPanel extends JPanel {
-		private final DentalScheme frameToPrint;
+		private final DentalPanel frameToPrint;
 
-		public ToolPanel(DentalScheme dentalScheme) {
-			this.frameToPrint = dentalScheme;
+		public ToolPanel(DentalPanel dentalPanel) {
+			this.frameToPrint = dentalPanel;
 			this.setPreferredSize(new Dimension(toolPanelPreferSize[0], toolPanelPreferSize[1]));
 			this.setBackground(defaultBackground);
 			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -93,6 +80,7 @@ public class DentalScheme extends JFrame implements Printable {
 
 		private JButton getPrintButton() {
 			return getToolButton("Печать", e -> {
+
 				PrinterJob job = PrinterJob.getPrinterJob();
 
 				job.setPrintable(frameToPrint);
@@ -338,7 +326,7 @@ public class DentalScheme extends JFrame implements Printable {
 
 	}
 
-	class DentalPanel extends JPanel {
+	class DentalPanel extends JPanel implements Printable {
 		private final Mouth mouth;
 
 		// Define the ellipse boundaries for the arch
@@ -661,5 +649,31 @@ public class DentalScheme extends JFrame implements Printable {
 			g2d.drawPolygon(xPoints, yPoints, 3);
 		}
 
+		@Override
+		public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+			if (pageIndex > 0) {
+				return Printable.NO_SUCH_PAGE;
+			}
+			int width = this.getWidth();
+			int height = this.getHeight();
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2dImage = image.createGraphics();
+
+			this.printAll(g2dImage);
+			g2dImage.dispose();
+
+			Graphics2D g2d = (Graphics2D) graphics;
+
+			double scaleX = pageFormat.getImageableWidth() / width;
+			double scaleY = pageFormat.getImageableHeight() / height;
+			double scale = Math.min(scaleX, scaleY);
+
+			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+			g2d.scale(scale, scale);
+			g2d.drawImage(image, 0, 0, null);
+//			this.printAll(g2d);
+
+			return Printable.PAGE_EXISTS;
+		}
 	}
 }
