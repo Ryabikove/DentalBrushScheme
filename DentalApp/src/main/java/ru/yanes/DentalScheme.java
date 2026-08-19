@@ -1,17 +1,24 @@
 package ru.yanes;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+
+import javax.swing.*;
+import javax.swing.border.AbstractBorder;
+import javax.swing.text.PlainDocument;
+
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import ru.yanes.data.Brush;
 import ru.yanes.data.Mouth;
@@ -20,12 +27,20 @@ import ru.yanes.data.Tooth;
 
 public class DentalScheme extends JFrame {
 	private Brush selectedBrush;
-	private final int[] windowMinSize = new int[]{1200, 1200};
-	private final int[] brushPanelMinSize = new int[]{200, 0};
+	private final int[] windowMinSize = new int[]{1600, 1300};
+	private final int[] brushPanelPreferSize = new int[]{400, 0};
+	private final int[] commentPanelPreferSize = new int[]{400, 0};
+	private final int[] toolPanelPreferSize = new int[]{0, 30};
+	private String basicFont;
+	private int count = 0;
+	private final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+
 	private final Color defaultBackground = new Color(230, 240, 230);
 
 	public DentalScheme() {
 		Mouth mouth = new Mouth();
+		basicFont = fonts[count];
+		System.out.println("Font Name: " + basicFont);
 
 		this.setTitle("\ud83e\uddb7 Дентальная схема");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,6 +48,8 @@ public class DentalScheme extends JFrame {
 
 		DentalPanel dentalPanel = new DentalPanel(mouth);
 		this.add(new BrushPanel(dentalPanel), BorderLayout.EAST);
+//		this.add(new CommentPanel(), BorderLayout.WEST);
+		this.add(new ToolPanel(dentalPanel), BorderLayout.NORTH);
 		this.add(dentalPanel, BorderLayout.CENTER);
 
 		this.setLocationRelativeTo(null);
@@ -49,6 +66,152 @@ public class DentalScheme extends JFrame {
 		SwingUtilities.invokeLater(DentalScheme::new);
 	}
 
+	class ToolPanel extends JPanel {
+		private final DentalPanel frameToPrint;
+
+		public ToolPanel(DentalPanel dentalPanel) {
+			this.frameToPrint = dentalPanel;
+			this.setPreferredSize(new Dimension(toolPanelPreferSize[0], toolPanelPreferSize[1]));
+			this.setBackground(defaultBackground);
+			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			this.setAlignmentY(TOP_ALIGNMENT);
+			this.add(getPrintButton());
+		}
+
+		private JButton getPrintButton() {
+			return getToolButton("Печать", e -> {
+
+				PrinterJob job = PrinterJob.getPrinterJob();
+
+				job.setPrintable(frameToPrint);
+
+				if (job.printDialog()) {
+					try {
+						job.print();
+					} catch (PrinterException e1) {
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(frameToPrint, "Ошибка печати: " + e1.getMessage());
+					}
+				}
+			});
+		}
+
+		private JButton getToolButton(String text, ActionListener actionListener) {
+			JButton button = new JButton(text);
+			button.setFont(new Font(basicFont, Font.PLAIN, 18));
+			button.setPreferredSize(new Dimension(100,30));
+			button.setFocusPainted(false);
+			button.setOpaque(true);
+
+			button.addActionListener(actionListener);
+			return button;
+		}
+	}
+
+//	class CommentPanel extends JPanel {
+//		private final String comment = "Поле для комментария";
+//		private final int commentAreaRowLimit = 40;
+//		private final int commentAreaColumnLimit = 25;
+//
+//		public CommentPanel() {
+//			this.setBackground(defaultBackground);
+//			this.setPreferredSize(new Dimension(commentPanelPreferSize[0], commentPanelPreferSize[1]));
+//			this.setLayout(new GridBagLayout());
+//
+//			GridBagConstraints gbc = new GridBagConstraints();
+//
+//			gbc.gridx = 0;
+//			gbc.gridy = 0;
+//			gbc.insets = new Insets(15, 15, 15, 15);
+//			gbc.weightx = 0.0;
+//			gbc.weighty = 0.0;
+//			gbc.anchor = GridBagConstraints.CENTER;
+//
+//			this.add(new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(basicFont, Font.PLAIN, 18), defaultBackground), gbc);
+//		}
+//
+//		@Override
+//		protected void paintComponent(Graphics g) {
+//			super.paintComponent(g);
+//			Graphics2D g2d = (Graphics2D) g;
+//			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//		}
+//
+//		class CommentTextArea extends JTextArea {
+//			private final int borderRadius = 20;
+//			private final float borderThickness = 1.5F;
+//
+//			private Color background;
+//
+//			public CommentTextArea(int rows, int columns, Font font, Color background) {
+//				super(rows, columns);
+//
+//				this.background = background;
+//
+//				this.setEditable(true);
+//				this.setLineWrap(true);
+//				this.setWrapStyleWord(true);
+//				this.setOpaque(false);
+//
+//				this.setFont(font);
+//
+//				this.setBorder(new RoundBorder(borderThickness, borderRadius, background.darker()));
+//				PlainDocument document = (PlainDocument) this.getDocument();
+//				document.setDocumentFilter(new TextLimitDocumentFilter(rows, columns * rows));
+//			}
+//
+//			@Override
+//			protected void paintComponent(Graphics g) {
+//				super.paintComponent(g);
+//				Graphics2D g2d = (Graphics2D) g.create();
+//				g2d.setColor(background);
+//
+//				FontMetrics fontMetrics = g2d.getFontMetrics();
+//				int lineHeight = fontMetrics.getHeight();
+//				int textStartX = getInsets().left;
+//
+//				g2d.setColor(defaultBackground.darker());
+//				int y = getInsets().top + fontMetrics.getAscent();
+//				while (y < getHeight()) {
+//					g2d.drawLine(textStartX, y, getWidth() - getInsets().right, y);
+//					y += lineHeight;
+//				}
+//
+//				super.paintComponent(g2d);
+//				g2d.dispose();
+//			}
+//
+//			class RoundBorder extends AbstractBorder {
+//				private final float borderThickness;
+//				private final int cornerRadius;
+//				private final Color borderColor;
+//
+//				public RoundBorder(float borderThickness, int cornerRadius, Color borderColor) {
+//					this.borderThickness = borderThickness;
+//					this.cornerRadius = cornerRadius;
+//					this.borderColor = borderColor;
+//				}
+//
+//				@Override
+//				public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+//					Graphics2D g2d = (Graphics2D) g.create();
+//					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//					g2d.setColor(borderColor);
+//					g2d.setStroke(new BasicStroke(borderThickness));
+//					g2d.drawRoundRect(x, y, width - 1, height - 1, cornerRadius, cornerRadius);
+//					g2d.dispose();
+//				}
+//
+//				@Override
+//				public Insets getBorderInsets(Component c) {
+//					int offset = cornerRadius;
+//					return new Insets(offset, offset, offset, offset);
+//				}
+//			}
+//		}
+//	}
+
 	class BrushPanel extends JPanel {
 		private final DentalPanel dentalPanel;
 		private final int brushRadius = 70;
@@ -56,7 +219,7 @@ public class DentalScheme extends JFrame {
 		BrushPanel(DentalPanel dentalPanel) {
 			this.dentalPanel = dentalPanel;
 			this.setBackground(defaultBackground);
-			this.setPreferredSize(new Dimension(brushPanelMinSize[0], brushPanelMinSize[1]));
+			this.setPreferredSize(new Dimension(brushPanelPreferSize[0], brushPanelPreferSize[1]));
 
 			this.addMouseListener(new MouseAdapter() {
 					@Override
@@ -131,7 +294,7 @@ public class DentalScheme extends JFrame {
 				g2d.translate(centerX, brushPos);
 
 				if (Objects.equals(brush,selectedBrush)){
-					g2d.setColor(Color.WHITE);
+					g2d.setColor(Color.LIGHT_GRAY);
 					g2d.setStroke(new BasicStroke(10F));
 					g2d.drawOval(-brushRadius / 2, -brushRadius / 2, brushRadius + 5, brushRadius + 5);
 				}
@@ -158,12 +321,14 @@ public class DentalScheme extends JFrame {
 				// Restore the original transform so the next tooth draws correctly
 				g2d.setTransform(originalTransform);
 			}
+
+			g2d.dispose();
 		}
 
 
 	}
 
-	class DentalPanel extends JPanel {
+	class DentalPanel extends JPanel implements Printable {
 		private final Mouth mouth;
 
 		// Define the ellipse boundaries for the arch
@@ -195,9 +360,23 @@ public class DentalScheme extends JFrame {
 		// Collision detection radius for spaces
 		private final int spaceRadius = 13;
 
+		//Comment field variables
+		private final String comment = "Поле для комментария";
+		private final int commentAreaRowLimit = 20;
+		private final int commentAreaColumnLimit = 25;
+
 		public DentalPanel(Mouth mouth) {
 			this.mouth = mouth;
 			this.setBackground(defaultBackground);
+			this.setLayout(new GridBagLayout());
+
+			GridBagConstraints gbc = new GridBagConstraints();
+
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.CENTER;
+
+			this.add(new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(basicFont, Font.PLAIN, 18), defaultBackground), gbc);
 
 			addMouseListener(new MouseAdapter() {
 				@Override
@@ -312,26 +491,38 @@ public class DentalScheme extends JFrame {
 			// Draw Lower Jaw (Angles from roughly 190 degrees to 350 degrees)
 			this.drawJaw(g2d, false, centerX, centerY + 40, startAngleLowerJaw, endAngleLowerJaw);
 
-			g2d.setFont(new Font("Arial", Font.BOLD, 28));
+			g2d.setFont(new Font("Arial", Font.BOLD, 25));
 			g2d.setColor(Color.DARK_GRAY);
 
 			// Define padding and metrics for jaws markers
 			FontMetrics fm = g2d.getFontMetrics();
-			int padding = 50;
+			int padding = 100;
 
 			// Upper Jaw marker definition
 			String topText = "Верхняя челюсть";
 			int topTextWidth = fm.stringWidth(topText);
 			int topTextX = centerX - topTextWidth / 2;
-			int topTextY = centerY - 50 - radiusY - padding;
+			int topTextY = centerY - radiusY - padding;
 			g2d.drawString(topText, topTextX, topTextY);
 
 			// Lower Jaw marker definition
 			String bottomText = "Нижняя челюсть";
 			int bottomTextWidth = fm.stringWidth(bottomText);
 			int bottomTextX = centerX - bottomTextWidth / 2;
-			int bottomTextY = centerY + 50 + radiusY + padding + fm.getAscent();
+			int bottomTextY = centerY + radiusY + padding + fm.getAscent();
 			g2d.drawString(bottomText, bottomTextX, bottomTextY);
+
+			// Left side marker
+			String leftText = "Лево";
+			int leftTextWidth = fm.stringWidth(leftText);
+			int leftTextX = centerX - radiusX - leftTextWidth / 2;
+			g2d.drawString(leftText, leftTextX, centerY);
+
+			//Right side marker
+			String rightText = "Право";
+			int rightTextWidth = fm.stringWidth(rightText);
+			int rightTextX = centerX + radiusX - rightTextWidth / 2;
+			g2d.drawString(rightText, rightTextX, centerY);
 		}
 
 		private void drawJaw(Graphics2D g2d, boolean upper, int centerX, int centerY, double startAngle, double endAngle) {
@@ -474,5 +665,30 @@ public class DentalScheme extends JFrame {
 			g2d.drawPolygon(xPoints, yPoints, 3);
 		}
 
+		@Override
+		public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+			if (pageIndex > 0) {
+				return Printable.NO_SUCH_PAGE;
+			}
+			int width = this.getWidth();
+			int height = this.getHeight();
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2dImage = image.createGraphics();
+
+			this.printAll(g2dImage);
+			g2dImage.dispose();
+
+			Graphics2D g2d = (Graphics2D) graphics;
+
+			double scaleX = pageFormat.getImageableWidth() / width;
+			double scaleY = pageFormat.getImageableHeight() / height;
+			double scale = Math.min(scaleX, scaleY);
+
+			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+			g2d.scale(scale, scale);
+			g2d.drawImage(image, 0, 0, null);
+
+			return Printable.PAGE_EXISTS;
+		}
 	}
 }
