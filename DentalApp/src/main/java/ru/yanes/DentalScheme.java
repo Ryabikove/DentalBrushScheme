@@ -7,8 +7,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.*;
-import javax.swing.border.AbstractBorder;
-import javax.swing.text.PlainDocument;
 
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -25,18 +23,48 @@ import ru.yanes.data.Mouth;
 import ru.yanes.data.Space;
 import ru.yanes.data.Tooth;
 
-public class DentalScheme extends JFrame {
-	private Brush selectedBrush;
-	private final int[] windowMinSize = new int[]{1600, 1300};
-	private final int[] brushPanelPreferSize = new int[]{400, 0};
-	private final int[] commentPanelPreferSize = new int[]{400, 0};
-	private final int[] toolPanelPreferSize = new int[]{0, 30};
-	private String basicFont;
-	private int count = 0;
-	private final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 
+/**
+ * The main class of the application, representing the main window of the dental scheme.
+ * <p>
+ * The window contains three main panels:
+ * <ol>
+ *     <li>{@link DentalPanel} — displays jaws, teeth, spaces and a comment field;</li>
+ *     <li>{@link BrushPanel} — displays the available brush types and allows you to select one of themх;</li>
+ *     <li>{@link ToolPanel} — contains tool buttons (eg print button).</li>
+ * </ol>
+ * The app uses the {@link Mouth} model to store the state of teeth and spaces.
+ *
+ * @author Skorokhodov Ilia
+ * @version 0.1b
+ * @since 2026-08
+ */
+public class DentalScheme extends JFrame {
+	/** The currently selected brush. If no brush is selected, the value is {@code null}. */
+	private Brush selectedBrush;
+	/** Minimal width and height of app window ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height). */
+	private final int[] windowMinSize = new int[]{1600, 1300};
+	/** Minimal width and height of {@link BrushPanel} ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height). */
+	private final int[] brushPanelPreferSize = new int[]{400, 0};
+	/** Minimal width and height of {@code CommentPanel} ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height).
+	 * @deprecated The {@code CommentPanel} is disabled, instead the comment is embedded in the {@link DentalPanel}
+	 */
+	private final int[] commentPanelPreferSize = new int[]{400, 0};
+	/** Minimal width and height of {@link ToolPanel} ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height). */
+	private final int[] toolPanelPreferSize = new int[]{0, 30};
+	/**Font family name which is used by default in app*/
+	private String basicFont;
+	/**Temporary field with counter for font families*/
+	private int count = 0;
+	/**Temporary field with list of font family names*/
+	private final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+	/**Default background color for app. Currently - light green.*/
 	private final Color defaultBackground = new Color(230, 240, 230);
 
+	/**
+	 * Creates the main application window and initializes the mouth model {@link Mouth},
+	 * configures window settings and adds all panels.
+	 */
 	public DentalScheme() {
 		Mouth mouth = new Mouth();
 		basicFont = fonts[count];
@@ -56,6 +84,11 @@ public class DentalScheme extends JFrame {
 		this.setVisible(true);
 	}
 
+	/**
+	 * The entry point to the application.
+	 * Sets the system look and feel and launches the graphical interface in the Swing event thread (EDT).
+	 * @param args command line arguments (not used)
+	 */
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -66,9 +99,19 @@ public class DentalScheme extends JFrame {
 		SwingUtilities.invokeLater(DentalScheme::new);
 	}
 
+	/**
+	 * A toolbar containing action buttons (for example, printing a diagram).
+	 * Located at the top of the window.
+	 */
 	class ToolPanel extends JPanel {
+		/** Link to the main panel {@link DentalPanel} that will be printed. */
 		private final DentalPanel frameToPrint;
 
+		/**
+		 * Creates a toolbar and adds a print button to it.
+		 *
+		 * @param dentalPanel the {@link DentalPanel} panel to print
+		 */
 		public ToolPanel(DentalPanel dentalPanel) {
 			this.frameToPrint = dentalPanel;
 			this.setPreferredSize(new Dimension(toolPanelPreferSize[0], toolPanelPreferSize[1]));
@@ -78,6 +121,12 @@ public class DentalScheme extends JFrame {
 			this.add(getPrintButton());
 		}
 
+		/**
+		 * Creates and returns a "Print" button. When clicked, a print dialog opens,
+		 * after confirmation, the {@link DentalPanel} is printed.
+		 *
+		 * @return button with a configured print handler
+		 */
 		private JButton getPrintButton() {
 			return getToolButton("Печать", e -> {
 
@@ -96,6 +145,13 @@ public class DentalScheme extends JFrame {
 			});
 		}
 
+		/**
+		 * Factory method for creating a standard tool button with the given text and action.
+		 *
+		 * @param text           text on the button
+		 * @param actionListener click handler
+		 * @return a ready-made button with a customized font, size, and handler
+		 */
 		private JButton getToolButton(String text, ActionListener actionListener) {
 			JButton button = new JButton(text);
 			button.setFont(new Font(basicFont, Font.PLAIN, 18));
@@ -212,10 +268,21 @@ public class DentalScheme extends JFrame {
 //		}
 //	}
 
+	/**
+	 * A panel for displaying and selecting toothbrush types.
+	 * Brushes are drawn vertically as colored circles with their diameters indicated.
+	 * Clicking on a brush selects or deselects it.
+	 */
 	class BrushPanel extends JPanel {
+		/** Link to the main panel to notify about the need to redraw after selecting a brush */
 		private final DentalPanel dentalPanel;
-		private final int brushRadius = 70;
+		/** The diameter of the circle representing the brush, in pixels.*/
+		private final int brushDiameter = 70;
 
+		/**
+		 * Creates a brush selection panel, configures the background, dimensions, and click handler.
+		 * @param dentalPanel reference to the main panel for display refresh
+		 */
 		BrushPanel(DentalPanel dentalPanel) {
 			this.dentalPanel = dentalPanel;
 			this.setBackground(defaultBackground);
@@ -229,6 +296,13 @@ public class DentalScheme extends JFrame {
 			});
 		}
 
+		/**
+		 * Handles a mouse click on the panel. Checks whether the click hits one of the brushes,
+		 * and redraws the panel and the main panel if necessary.
+		 *
+		 * @param mouseX is the x-coordinate of the click
+		 * @param mouseY is the y-coordinate of the click
+		 */
 		private void handlePanelClick(int mouseX, int mouseY) {
 			int centerX = getWidth() / 2;
 			int centerY = getHeight() / 2;
@@ -241,6 +315,17 @@ public class DentalScheme extends JFrame {
 			}
 		}
 
+		/**
+		 * Checks whether the click hits one of the brushes. If a hit is detected,
+		 * toggles the state of the selected brush ({@link DentalScheme#selectedBrush}): if the brush was already
+		 * selected, deselects it; otherwise, selects it.
+		 *
+		 * @param mouseX : x-coordinate of the click
+		 * @param mouseY : y-coordinate of the click
+		 * @param centerX : x-coordinate of the panel center (brush axis)
+		 * @param centerY : y-coordinate of the panel center (not used in the current logic)
+		 * @return {@code true} if the click was processed (hit a brush), otherwise {@code false}
+		 */
 		private boolean checkBrushClick(int mouseX, int mouseY, int centerX, int centerY) {
 			int brushCount = Brush.values().length;
 
@@ -249,7 +334,7 @@ public class DentalScheme extends JFrame {
 				int brushPos = this.getHeight() / (brushCount + 1) * i;
 
 				//If x,y of mouse in brush
-				if (getDistance(centerX, brushPos, mouseX, mouseY) <= (double) brushRadius / 2) {
+				if (getDistance(centerX, brushPos, mouseX, mouseY) <= (double) brushDiameter / 2) {
 					Brush clickedBrush = Brush.values()[i - 1];
 
 					//Then if brush has been selected - unpin, if it hasn't - pin
@@ -269,10 +354,26 @@ public class DentalScheme extends JFrame {
 			return false;
 		}
 
+		/**
+		 * Calculates the Euclidean distance between two points.
+		 *
+		 * @param x1 is the x-coordinate of the first point
+		 * @param y1 is the y-coordinate of the first point
+		 * @param x2 is the x-coordinate of the second point
+		 * @param y2 is the y-coordinate of the second point
+		 * @return the distance between the points
+		 */
 		private double getDistance(int x1, int y1, int x2, int y2) {
 			return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 		}
 
+		/**
+		 * Draws all available brushes as circles arranged vertically in the center of the panel.
+		 * The selected brush is additionally highlighted with a gray ring. Inside each circle,
+		 * the brush diameter is displayed.
+		 *
+		 * @param g graphics context
+		 */
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
@@ -296,18 +397,18 @@ public class DentalScheme extends JFrame {
 				if (Objects.equals(brush,selectedBrush)){
 					g2d.setColor(Color.LIGHT_GRAY);
 					g2d.setStroke(new BasicStroke(10F));
-					g2d.drawOval(-brushRadius / 2, -brushRadius / 2, brushRadius + 5, brushRadius + 5);
+					g2d.drawOval(-brushDiameter / 2, -brushDiameter / 2, brushDiameter + 5, brushDiameter + 5);
 				}
 
 				// Draw the brush shape (centered on 0,0 since we translated)
 				g2d.setColor(brush.getColor());
-				g2d.fillOval(-brushRadius / 2, -brushRadius / 2, brushRadius, brushRadius);
+				g2d.fillOval(-brushDiameter / 2, -brushDiameter / 2, brushDiameter, brushDiameter);
 
 
 				// Draw the outline
 				g2d.setColor(Color.BLACK);
 				g2d.setStroke(new BasicStroke(2.5F));
-				g2d.drawOval(-brushRadius / 2, -brushRadius / 2, brushRadius, brushRadius);
+				g2d.drawOval(-brushDiameter / 2, -brushDiameter / 2, brushDiameter, brushDiameter);
 
 				// Draw brush diameter
 				String posText = String.valueOf(brush.getDiameter());
@@ -328,41 +429,52 @@ public class DentalScheme extends JFrame {
 
 	}
 
+	/**
+	 * The main panel displays the upper and lower jaws with teeth and spaces,
+	 * as well as a comment field. Implements the {@link Printable} interface for printing.
+	 * Handles clicks on teeth (toggle accessibility) and spaces
+	 * (set the selected toothbrush).
+	 */
 	class DentalPanel extends JPanel implements Printable {
+		/** Mouth model containing teeth and spaces. */
 		private final Mouth mouth;
-
-		// Define the ellipse boundaries for the arch
+		/** Horizontal and vertical radius of the elliptical arcs for the jaws. */
 		private final int radiusX = 350;
 		private final int radiusY = 430;
-		//Define start and end angles for each jaw
+		/** Start and end angles of the upper jaw arc (in radians). */
 		private final double startAngleUpperJaw = Math.PI * 1.05;
 		private final double endAngleUpperJaw = Math.PI * 1.95;
+		/** Start and end angles of the lower jaw arc (in radians). */
 		private final double startAngleLowerJaw = Math.PI * 0.95;
 		private final double endAngleLowerJaw = Math.PI * 0.05;
 
-		// Define tooth width and height
+		/** Tooth width and height in pixels. */
 		private final int toothWidth = 45;
 		private final int toothHeight = 55;
+		/** Basic tooth color (white). */
 		private final Color basicToothColor = Color.WHITE;
 
-		// Define space width and height
+		/** Space (triangle) width and height in pixels. */
 		private final int spaceWidth = 15;
 		private final int spaceHeight = 45;
-		// Define space [x] and [y] arrays
+		/** Array of x-coordinates of the space's base triangle (relative to the center). */
 		private final int[] basicSpaceX = new int[]{0, spaceWidth, -spaceWidth};
+		/**Arrays of y-coordinates of the space's outer and inner triangles. */
 		private final int[] outerSpaceY = new int[]{-toothHeight / 3, -spaceHeight, -spaceHeight};
 		private final int[] innerSpaceY = new int[]{toothHeight / 3, spaceHeight, spaceHeight};
-		//Define basic space color
+		/** The space's base color (same as {@link DentalScheme#defaultBackground}). */
 		private final Color basicSpaceColor = defaultBackground;
 
-		// Collision detection radius for teeth
+		/** Tooth click radius. */
 		private final int toothRadius = 25;
-		// Collision detection radius for spaces
+		/** Space click radius. */
 		private final int spaceRadius = 13;
 
-		//Comment field variables
+		/** Comment title text. */
 		private final String comment = "Поле для комментария";
+		/** Maximum number of rows in the comment text area. */
 		private final int commentAreaRowLimit = 20;
+		/** Maximum number of columns in the comment text area. */
 		private final int commentAreaColumnLimit = 25;
 
 		public DentalPanel(Mouth mouth) {
