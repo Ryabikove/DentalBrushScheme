@@ -6,14 +6,44 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 
+/**
+ * A text area for a comment with a fixed number of rows and columns.
+ * <p>
+ * The area has a rounded border, a semi-transparent background (opaque = false), and displays
+ * horizontal lines visually separating lines. Text input is limited by the number of
+ * characters and lines using {@link TextLimitDocumentFilter}, which is set
+ * on the document of this area.
+ * <p>
+ * The class inherits {@link JTextArea} and overrides the {@link #paintComponent(Graphics)} method
+ * to draw line borders, and also uses the inner {@link RoundBorder} class
+ * to create a rounded border.
+ */
 public class CommentTextArea extends JTextArea {
+	/** Border corner radius in pixels. */
 	private final int borderRadius = 20;
+	/** Borderline thickness. */
 	private final float borderThickness = 2F;
+	/** Maximum number of lines allowed in a text area. */
 	private final int rowLimit;
+	/** Maximum allowed number of columns (characters per line). */
 	private final int colLimit;
-
+	/** Text area background color. */
 	private Color background;
 
+	/**
+	 * Creates a comment text area with the specified parameters.
+	 * <p>
+	 * Sets the font, enables word and line wrap, and makes the area
+	 * opaque (opaque = false) so the background can be drawn manually.
+	 * A {@link TextLimitDocumentFilter} is applied to the area document, limiting the
+	 * total number of characters to {@code colLimit * rowLimit}, and the number
+	 * of rows to {@code rowLimit}.
+	 *
+	 * @param rows number of rows (limit)
+	 * @param columns number of columns (character limit per line)
+	 * @param font text font
+	 * @param background area background color
+	 */
 	public CommentTextArea(int rows, int columns, Font font, Color background) {
 		super(rows, columns);
 		this.rowLimit = rows;
@@ -33,6 +63,15 @@ public class CommentTextArea extends JTextArea {
 		document.setDocumentFilter(new TextLimitDocumentFilter(rowLimit, colLimit * rowLimit));
 	}
 
+	/**
+	 * Overridden component rendering method. First, it calls the parent's rendering method
+	 * , then draws horizontal lines on top of it to separate the rows.
+	 * The lines are drawn with the {@code background.darker()} color and spaced equal to the row height.
+	 * After the lines are drawn, the parent method is called again with the modified
+	 * graphics context (to correctly display text on top of the lines).
+	 *
+	 * @param g graphics context
+	 */
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -54,17 +93,45 @@ public class CommentTextArea extends JTextArea {
 		g2d.dispose();
 	}
 
+	/**
+	 * Inner class implementing a border with rounded corners.
+	 * Draws a rounded rectangle outline using the specified width,
+	 * radius, and color. Returns the appropriate padding to prevent text from overlapping
+	 * the border.
+	 */
 	class RoundBorder extends AbstractBorder {
+		/** Borderline thickness. */
 		private final float borderThickness;
+		/** Corner rounding radius. */
 		private final int cornerRadius;
+		/** Borderline color. */
 		private final Color borderColor;
 
+		/**
+		 * Creates a rounded border with the specified parameters.
+		 *
+		 * @param borderThickness line thickness
+		 * @param cornerRadius corner radius
+		 * @param borderColor line color
+		 */
 		public RoundBorder(float borderThickness, int cornerRadius, Color borderColor) {
 			this.borderThickness = borderThickness;
 			this.cornerRadius = cornerRadius;
 			this.borderColor = borderColor;
 		}
 
+
+		/**
+		 * Draws a rounded rectangle border around the component.
+		 * Enables anti-aliasing for smooth curves.
+		 *
+		 * @param c : The component for which to draw the border
+		 * @param g : The graphics context
+		 * @param x : The x-coordinate of the upper-left corner
+		 * @param y : The y-coordinate of the upper-left corner
+		 * @param width : The width of the drawing area
+		 * @param height : The height of the drawing area
+		 */
 		@Override
 		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 			Graphics2D g2d = (Graphics2D) g.create();
@@ -75,6 +142,14 @@ public class CommentTextArea extends JTextArea {
 			g2d.dispose();
 		}
 
+		/**
+		 * Returns the padding the component must have to prevent its contents
+		 * from intersecting with the rounded border. The padding is equal to the corner radius
+		 * on all sides.
+		 *
+		 * @param c - the component for which the padding is calculated
+		 * @return an {@link Insets} object with equal padding equal to {@code cornerRadius}
+		 */
 		@Override
 		public Insets getBorderInsets(Component c) {
 			int offset = cornerRadius;

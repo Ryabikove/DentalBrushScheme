@@ -477,6 +477,13 @@ public class DentalScheme extends JFrame {
 		/** Maximum number of columns in the comment text area. */
 		private final int commentAreaColumnLimit = 25;
 
+
+		/**
+		 * Creates the main panel, saves the mouth model, adds a comment text area
+		 * and a click handler for teeth and spaces.
+		 *
+		 * @param mouth - a mouth model with teeth and spaces
+		 */
 		public DentalPanel(Mouth mouth) {
 			this.mouth = mouth;
 			this.setBackground(defaultBackground);
@@ -498,6 +505,13 @@ public class DentalScheme extends JFrame {
 			});
 		}
 
+		/**
+		 * Handles a mouse click on the panel. First, it checks the upper jaw, then the lower.
+		 * If a tooth or gap is hit, it causes the panel to be redrawn.
+		 *
+		 * @param mouseX is the x-coordinate of the click
+		 * @param mouseY is the y-coordinate of the click
+		 */
 		private void handlePanelClick(int mouseX, int mouseY) {
 			int centerX = getWidth() / 2;
 			int centerY = getHeight() / 2;
@@ -515,6 +529,21 @@ public class DentalScheme extends JFrame {
 			}
 		}
 
+		/**
+		 * Checks whether the click hits teeth and spaces on the specified jaw.
+		 * If the click hits a tooth, toggles its availability. If the click hits an
+		 * available space and a brush is selected, assigns that brush to the corresponding
+		 * part of the space (inner or outer).
+		 *
+		 * @param mouseX : x-coordinate of the click
+		 * @param mouseY : y-coordinate of the click
+		 * @param upper : {@code true} for the upper jaw, {@code false} for the lower jaw
+		 * @param centerX : x-coordinate of the center of the jaw arc
+		 * @param centerY : y-coordinate of the center of the jaw arc
+		 * @param startAngle : start angle of the arc (in radians)
+		 * @param endAngle : end angle of the arc (in radians)
+		 * @return {@code true} if the click was processed (tooth or gap), otherwise {@code false}
+		 */
 		private boolean checkJawClick(int mouseX, int mouseY, boolean upper,
 		                              int centerX, int centerY, double startAngle, double endAngle) {
 
@@ -581,10 +610,25 @@ public class DentalScheme extends JFrame {
 			return false;
 		}
 
+		/**
+		 * Calculates the Euclidean distance between two points.
+		 *
+		 * @param x1 is the x-coordinate of the first point
+		 * @param y1 is the y-coordinate of the first point
+		 * @param x2 is the x-coordinate of the second point
+		 * @param y2 is the y-coordinate of the second point
+		 * @return the distance between the points
+		 */
 		private double getDistance(int x1, int y1, int x2, int y2) {
 			return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 		}
 
+		/**
+		 * Renders the upper and lower jaws, as well as the labels "Upper Jaw,"
+		 * "Lower Jaw," "Left," and "Right." Enables anti-aliasing for high-quality rendering.
+		 *
+		 * @param g graphics context
+		 */
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
@@ -637,6 +681,17 @@ public class DentalScheme extends JFrame {
 			g2d.drawString(rightText, rightTextX, centerY);
 		}
 
+		/**
+		 * Draws a single jaw: all 16 teeth and spaces between them (if necessary).
+		 * Spaces are drawn only if a toothbrush is selected or if a toothbrush is already placed in them.
+		 *
+		 * @param g2d 2D graphics context
+		 * @param upper {@code true} for the upper jaw, {@code false} for the lower jaw
+		 * @param centerX x-coordinate of the arc center
+		 * @param centerY y-coordinate of the arc center
+		 * @param startAngle start angle of the arc
+		 * @param endAngle end angle of the arc
+		 */
 		private void drawJaw(Graphics2D g2d, boolean upper, int centerX, int centerY, double startAngle, double endAngle) {
 
 			double angleStep = (endAngle - startAngle) / 15;
@@ -674,6 +729,17 @@ public class DentalScheme extends JFrame {
 			}
 		}
 
+		/**
+		 * Draws a single tooth at a given position, taking rotation into account. The tooth is displayed as a
+		 * rounded rectangle. If a tooth is unavailable, it is darkened. Inside the tooth,
+		 * its number (position according to FDI) is displayed.
+		 *
+		 * @param g2d 2D graphics context
+		 * @param tooth tooth object
+		 * @param x x-coordinate of the tooth center
+		 * @param y y-coordinate of the tooth center
+		 * @param angle tooth rotation angle (in radians)
+		 */
 		private void drawTooth(Graphics2D g2d, Tooth tooth, int x, int y, double angle) {
 
 //			System.out.println("Drawing tooth - " + tooth.getPosition() + ";");
@@ -710,6 +776,18 @@ public class DentalScheme extends JFrame {
 			g2d.setTransform(originalTransform);
 		}
 
+		/**
+		 * Draws a gap between two teeth. The gap can consist of two triangles:
+		 * outer and inner. If one of the parts is already occupied by a toothbrush,
+		 * the corresponding triangle is not drawn. The color of the triangle depends on the installed toothbrush
+		 * or the availability of the gap.
+		 *
+		 * @param g2d 2D graphics context
+		 * @param space gap object
+		 * @param x x-coordinate of the gap center
+		 * @param y y-coordinate of the gap center
+		 * @param angle gap rotation angle (in radians)
+		 */
 		private void drawSpaces(Graphics2D g2d, Space space, int x, int y, double angle) {
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
@@ -764,6 +842,16 @@ public class DentalScheme extends JFrame {
 			g2d.setTransform(originalTransform);
 		}
 
+		/**
+		 * Draws a single triangular space (a polygon of three points) with the specified fill color
+		 * and stroke style. Used as a helper method for {@link #drawSpaces}.
+		 *
+		 * @param g2d 2D graphics context
+		 * @param xPoints array of triangle vertex x-coordinates
+		 * @param yPoints array of triangle vertex y-coordinates
+		 * @param color fill color
+		 * @param stroke stroke style
+		 */
 		//TODO refactor to inner method
 		private void drawSpace(Graphics2D g2d, int[] xPoints, int[] yPoints, Color color, Stroke stroke) {
 
@@ -777,6 +865,18 @@ public class DentalScheme extends JFrame {
 			g2d.drawPolygon(xPoints, yPoints, 3);
 		}
 
+		/**
+		 * Implementation of the {@link Printable} interface for printing the panel's contents.
+		 * Creates an image of the panel, scales it to the printable area
+		 * and outputs it to the page. Only one page is supported.
+		 *
+		 * @param graphics : the printer's graphics context
+		 * @param pageFormat : the page format
+		 * @param pageIndex : the page index (0 is the only page)
+		 * @return {@link Printable#PAGE_EXISTS} if the page was successfully rendered,
+		 * {@link Printable#NO_SUCH_PAGE} if a non-existent page was requested
+		 * @throws PrinterException if a printing error occurs
+		 */
 		@Override
 		public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
 			if (pageIndex > 0) {

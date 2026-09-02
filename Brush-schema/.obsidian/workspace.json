@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Description.md",
+                "file": "tutorial/How to start.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Description"
+              "title": "How to start"
             }
           }
         ]
@@ -189,5 +189,7 @@
     }
   },
   "active": "fe0ed5050cee6889",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "Description.md"
+  ]
 }
