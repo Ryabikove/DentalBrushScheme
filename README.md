@@ -4,11 +4,14 @@
 
 DentalBrushScheme is an app that helps dentists create visual scheme of patient's mouth. This scheme contains information about mouth care. Scheme can be printed as usual document and given to patient for take away.
 
-It is monolithic, small app. The basis of the application is [Awt](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/package-summary.html) and [Swing](https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/package-summary.html) frameworks.
+It is monolithic, small app. The basis of the application is Java 24, [Awt](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/package-summary.html) and [Swing](https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/package-summary.html) frameworks.
 
-# How to install
+## How to install
 
-# In case you find bug/suggested improvement for DentalBrushScheme
+### Requirements:
+- Java 24;
+
+## In case you find bug/suggested improvement for DentalBrushScheme
 
 My issue tracker is available [here](https://github.com/Ryabikove/DentalBrushScheme/issues). But before filing an issue or feature, please, verify that it's not already reported by someone else.
 When filing bugs:
