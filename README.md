@@ -6,10 +6,8 @@ DentalBrushScheme is an app that helps dentists create visual scheme of patient'
 
 It is monolithic, small app. The basis of the application is Java 24, [Awt](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/package-summary.html) and [Swing](https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/package-summary.html) frameworks.
 
-## How to install
-
-### Requirements:
-- Java 24;
+## Documentation
+available throw [link](./Brush-schema/README.md)
 
 ## In case you find bug/suggested improvement for DentalBrushScheme
 
