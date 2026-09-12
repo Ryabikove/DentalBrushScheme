@@ -1,0 +1,24 @@
+name: Documentation translation
+on:
+  push:
+    branches:
+      - test
+    paths:
+      - README.md
+      - 'Brush-schema (doc)/README.md'
+      - 'Brush-schema (doc)/tutorial/**/*.md'
+
+jobs:
+  continuous-translation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run AI Translation
+        uses: pelikhan/action-continuous-translation@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          lang: ru
+          files: 'Brush-schema (doc)/**/*.md'
+          source: 'en'
