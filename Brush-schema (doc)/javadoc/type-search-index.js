@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"ru.yanes.data","l":"Brush"},{"p":"ru.yanes","l":"CommentTextArea"},{"p":"ru.yanes","l":"DentalScheme"},{"p":"ru.yanes.data","l":"Mouth"},{"p":"ru.yanes.data","l":"Space"},{"p":"ru.yanes","l":"TextLimitDocumentFilter"},{"p":"ru.yanes.data","l":"Tooth"}];updateSearchResults();
