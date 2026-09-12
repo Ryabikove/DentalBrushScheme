@@ -50,7 +50,9 @@ Representation of space:
   - You can see both triangles only when a [brush type selected](#brush-properties).
   - The color of it is the same as background.
   - Its border is dashed.
-<img src='../images/dental_panel/empty_spaces_upper_jaw.png' alt='empty spaces of upper jaw' width=auto height=auto style='max-width: 100%; max-height: 100%'>
+ 
+  <img src='../images/dental_panel/empty_spaces_upper_jaw.png' alt='empty spaces of upper jaw' width=auto height=auto style='max-width: 100%; max-height: 100%'>
+
 - When **filled with brush**:
   - You can see only one triangle.
   - The second triangle becomes invisible.
@@ -60,7 +62,8 @@ Representation of space:
   - You can see both triangles only when a [brush type selected](#brush-properties).
   - The color of it is darker than background.
   - Its border is solid.
-<img src='../images/dental_panel/unavailable_spaces.png' alt='unavailable spaces' width=auto height=auto style='max-width: 50%; height: auto'>
+ 
+  <img src='../images/dental_panel/unavailable_spaces.png' alt='unavailable spaces' width=auto height=auto style='max-width: 50%; height: auto'>
  
 Action with space:
 - You **can fill** the space by clicking on one of two triangles when brush type is [selected](#brush-properties).
@@ -85,12 +88,15 @@ Action with comment field:
 
 ## Brush panel
 Contains [brush types](#brush-properties). This area uses to control selected brush.
+
 <img src='../images/brush_panel/brush_panel.png' alt='brush panel' width=auto height=500 style='width: auto; max-height: 50%'>
 
 ### Brush properties
 Meaning of brush:
 - A brush for between-teeth spaces like on image below.
+
 <img src='../images/brush_panel/brushes.png' alt='brushes' width=auto height=auto style='max-width: 50%; height: auto'>
+
 - There are represented next types of brushes: xxs, xs, s, m, l, xl, xxl. Each brush has own size (diameter in mm): 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 1.1.
 - Brush may be selected and unselected:
   - When it is **selected**, you may fill spaces with it.
@@ -108,9 +114,11 @@ Action with brush:
 - You can **unselect** a brush type with click on selected brush.
 ## Tool panel
 The tool panel contains tool buttons. For now there is only print button.
+
 <img src='../images/tool_panel/tool_panel.png' alt='tool panel' width=auto height=auto style='max-width: 100%; height: auto' >
 
 ### Print button
 Functions:
 - Activates default print api of system.
+
 <img src='../images/tool_panel/windows_print_api.png' alt='windows print api' width=auto height=auto style>
