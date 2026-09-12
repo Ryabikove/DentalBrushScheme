@@ -2,7 +2,7 @@
 App window with basic schema of human teeth, spaces between them and brushes. 
 
 The app consists of 1 window:
-<img src='../images/whole_window.png' alt='whole window' width=auto height=500px style='max-width: 50%; max-height: 50%'>
+<img src='../images/whole_window.png' alt='whole window' width=auto height=auto style='max-width: 100%; max-height: 100%'>
 
 And 3 main parts of it:
 1. [Central](#dental-panel) - a **dental panel** with teeth, spaces and comment field
@@ -15,7 +15,7 @@ Contains [teeth](#tooth-properties), [spaces](#space-properties) and [comments](
 - Fill **spaces** with brushes or empty it.
 - Write **comments**
 When you click ['print' button](#print-button) , only this area goes to document.
-<img src='../images/dental_panel.png' alt='dental panel' width=auto height=500px style='max-width: 50%; max-height: 50%'>
+<img src='../images/dental_panel/dental_panel.png' alt='dental panel' width=auto height=auto style='max-width: 100%; max-height: 100%'>
 
 ### Tooth properties
 Meaning of tooth:
@@ -28,9 +28,9 @@ Meaning of tooth:
 Representation of tooth:
 - A white or gray rectangle with border and number inside it.
 - When '**lost**' - it's color is darker than when it is available.
-<img src='../images/lost_tooth.png' alt='lost teeth' width=auto height=80 style='max-width: 50%; max-height: 50%'>
+<img src='../images/dental_panel/lost_tooth.png' alt='lost teeth' width=auto height=auto style='max-width: 50%; height: auto'>
 - When '**available**' - it's color is white.
-<img src='../images/available_teeth.png' alt='available two teeth' width=auto height=90 style='max-width: 50%; max-height: 50%'>
+<img src='../images/dental_panel/available_teeth.png' alt='available two teeth' width=auto height=auto style='max-width: 50%; height: auto'>
 
 Action with tooth:
 - You can make tooth **available** or **lost** with click on it.
@@ -50,7 +50,7 @@ Representation of space:
   - You can see both triangles only when a [brush type selected](#brush-properties).
   - The color of it is the same as background.
   - Its border is dashed.
-<img src='../images/empty_spaces_upper_jaw.png' alt='empty spaces of upper jaw' width=auto height=300 style='max-width: 50%; max-height: 50%'>
+<img src='../images/dental_panel/empty_spaces_upper_jaw.png' alt='empty spaces of upper jaw' width=auto height=auto style='max-width: 100%; max-height: 100%'>
 - When **filled with brush**:
   - You can see only one triangle.
   - The second triangle becomes invisible.
@@ -60,7 +60,7 @@ Representation of space:
   - You can see both triangles only when a [brush type selected](#brush-properties).
   - The color of it is darker than background.
   - Its border is solid.
-<img src='../images/dental_panel/unavailable_spaces.png' alt='unavailable spaces' width=auto height=120 style='max-width: 50%; max-height: 50%'>
+<img src='../images/dental_panel/unavailable_spaces.png' alt='unavailable spaces' width=auto height=auto style='max-width: 50%; height: auto'>
  
 Action with space:
 - You **can fill** the space by clicking on one of two triangles when brush type is [selected](#brush-properties).
@@ -77,7 +77,7 @@ Meaning of comment field:
 
 Representation of comment field:
 - Static size rectangle area with strings and rows.
-<img src='../images/comment_field.png' alt='comment field' width=auto height=350 style='max-width: 50%; max-height: 50%;'>
+<img src='../images/dental_panel/comment_field.png' alt='comment field' width=auto height=auto style='width: auto; max-height: 50%;'>
 - It has limits in rows - 20, and in chars - 500.
 
 Action with comment field:
@@ -85,12 +85,12 @@ Action with comment field:
 
 ## Brush panel
 Contains [brush types](#brush-properties). This area uses to control selected brush.
-<img src='../images/brush_panel.png' alt='brush panel' width=auto height=500 style='max-width: 50%; max-height: 50%'>
+<img src='../images/brush_panel/brush_panel.png' alt='brush panel' width=auto height=500 style='width: auto; max-height: 50%'>
 
 ### Brush properties
 Meaning of brush:
 - A brush for between-teeth spaces like on image below.
-<img src='../images/brushes.png' alt='brushes' width=300px height=auto style='max-width: 50%; max-height: 50%'>
+<img src='../images/brush_panel/brushes.png' alt='brushes' width=auto height=auto style='max-width: 50%; height: auto'>
 - There are represented next types of brushes: xxs, xs, s, m, l, xl, xxl. Each brush has own size (diameter in mm): 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 1.1.
 - Brush may be selected and unselected:
   - When it is **selected**, you may fill spaces with it.
@@ -99,13 +99,18 @@ Meaning of brush:
 Representation of brush:
 - A circle with special color and number inside.
 - When **unselected** it has usual look: 
-<img src='../images/unselected_xs_brush.png' alt='unselected xs brush' width=82 height=auto style='max-width: 50%; max-height: 50%'>
+<img src='../images/brush_panel/unselected_xs_brush.png' alt='unselected xs brush' width=auto height=auto>
 - When **selected** there it gets light-gray circle around:
-<img src='../images/selected_xs_brush.png' alt='selected xs brush' width=90 height=auto style='max-width: 50%; max-height: 50%'>
+<img src='../images/brush_panel/selected_xs_brush.png' alt='selected xs brush' width=auto height=auto>
 
 Action with brush:
 - You can **select** a brush type with click on it.
 - You can **unselect** a brush type with click on selected brush.
 ## Tool panel
+The tool panel contains tool buttons. For now there is only print button.
+<img src='../images/tool_panel/tool_panel.png' alt='tool panel' width=auto height=auto style='max-width: 100%; height: auto' >
 
 ### Print button
+Functions:
+- Activates default print api of system.
+<img src='../images/tool_panel/windows_print_api.png' alt='windows print api' width=auto height=auto style>
